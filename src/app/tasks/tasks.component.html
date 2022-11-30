@@ -3,43 +3,43 @@
       <i class="fa fa-plus"></i>
     </button>
   </div>
-  
+
   <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">New ToDo Task</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button #closeModalButton type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
           <form [formGroup]="newTaskForm">
-            <input required type="text" formControlName="name" placeholder="Title" class="mt-3 form-control">
-            <small 
-            *ngIf="!newTaskForm.get('name').valid && newTaskForm.get('name').touched" 
+            <input required type="text" formControlName="title" placeholder="Title" class="mt-3 form-control">
+            <small
+            *ngIf="!newTaskForm.get('title').valid && newTaskForm.get('title').touched"
             class="text-danger">*Please add task Title
           </small>
-            <input required type="text" formControlName="desc" placeholder="Description" class="mt-3 form-control">
-            <small 
-            *ngIf="!newTaskForm.get('desc').valid && newTaskForm.get('desc').touched" 
+            <input required type="text" formControlName="description" placeholder="Description" class="mt-3 form-control">
+            <small
+            *ngIf="!newTaskForm.get('description').valid && newTaskForm.get('description').touched"
             class="text-danger">*Please add task Description
           </small>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" 
+          <button type="button"
           data-dismiss="modal"
-          [disabled]="!newTaskForm.valid" 
-          class="btn btn-info" 
-          (click)="addTask()" 
+          [disabled]="!newTaskForm.valid"
+          class="btn btn-info"
+          (click)="addTask()"
           >Save changes</button>
         </div>
       </div>
     </div>
   </div>
-  
+
   <div class="container d-md-flex flex-column-md">
     <div class="row">
       <div class="col-md m-2">
@@ -49,40 +49,43 @@
           #todolist="cdkDropList"
           [cdkDropListData]="todo"
           [cdkDropListConnectedTo]="[rejectedlist, doinglist, donelist, todolist]"
-          (cdkDropListDropped)="drop($event)"
+          (cdkDropListDropped)="drop($event, 'todo')"
         >
           <nav class="navbar navbar-light bg-light border-bottom">
             <div>ToDo</div>
             <div>{{ todo.length }}</div>
           </nav>
-  
+
           <mat-card cdkDrag *ngFor="let item of todo">
             <div>
-              <div class="delete p-1 float-right" (click)="deleteTask(item.date, 'todo')">
+              <div class="delete p-1 float-right" (click)="deleteTask(item)">
                 <span><i class="fa fa-trash"></i></span>
               </div>
-  
+              <div class="edit p-1 mr-2 float-right" (click)="editTask(item)" data-toggle="modal" data-target="#exampleModal" >
+                <span><i class="fa fa-pencil"></i></span>
+              </div>
+
               <mat-card-title
                 ><p class="text-primary">Task Name:</p>
-                {{ item?.name }}</mat-card-title
+                {{ item?.title }}</mat-card-title
               ><hr>
               <mat-card-subtitle
                 ><p class="text-primary">Task Description:</p>
-                {{ item?.desc }}</mat-card-subtitle
+                {{ item?.description }}</mat-card-subtitle
               >
             </div><hr>
             <div class="text-muted display-5 font-weight-light">
               Created Date:
-              {{ item?.date | date:"medium":"medium" }}
+              {{ item.created_at | date:"medium":"medium" }}
             </div>
           </mat-card>
-  
+
           <div class="alert alert-info m-3" *ngIf="todo.length === 0">
             No Pending tasks to do..!!
           </div>
         </div>
       </div>
-  
+
       <div class="col-md m-2">
         <div
           class="list"
@@ -90,30 +93,33 @@
           #doinglist="cdkDropList"
           [cdkDropListData]="doing"
           [cdkDropListConnectedTo]="[rejectedlist, doinglist, donelist, todolist]"
-          (cdkDropListDropped)="drop($event)"
+          (cdkDropListDropped)="drop($event, 'doing')"
         >
           <nav class="navbar navbar-light bg-light border-bottom">
             <div>Doing</div>
             <div>{{ doing.length }}</div>
           </nav>
-  
+
           <mat-card cdkDrag *ngFor="let item of doing">
             <div>
-              <div class="delete p-1 float-right" (click)="deleteTask(item.date, 'doing')">
+              <div class="delete p-1 float-right" (click)="deleteTask(item)">
                 <span><i class="fa fa-trash"></i></span>
+              </div>
+              <div class="edit p-1 mr-2 float-right" (click)="editTask(item)" data-toggle="modal" data-target="#exampleModal" >
+                <span><i class="fa fa-pencil"></i></span>
               </div>
               <mat-card-title
                 ><p class="text-primary">Task Name:</p>
-                {{ item.name }}</mat-card-title
+                {{ item.title }}</mat-card-title
               ><hr>
               <mat-card-subtitle
                 ><p class="text-primary">Task Description:</p>
-                {{ item.desc }}</mat-card-subtitle
+                {{ item.description }}</mat-card-subtitle
               >
             </div><hr>
             <div class="text-muted display-5 font-weight-light">
               Created Date:
-              {{ item?.date | date:"medium" }}
+              {{ item.created_at | date:"medium" }}
             </div>
           </mat-card>
           <div class="alert alert-info m-3" *ngIf="doing.length === 0">
@@ -129,30 +135,33 @@
           #donelist="cdkDropList"
           [cdkDropListData]="done"
           [cdkDropListConnectedTo]="[rejectedlist, doinglist, donelist, todolist]"
-          (cdkDropListDropped)="drop($event)"
+          (cdkDropListDropped)="drop($event, 'done')"
         >
         <nav class="navbar navbar-light bg-light border-bottom">
           <div>Done</div>
           <div>{{ done.length }}</div>
-        </nav> 
-  
+        </nav>
+
           <mat-card cdkDrag *ngFor="let item of done">
             <div>
-              <div class="delete p-1 float-right" (click)="deleteTask(item.date, 'done')">
+              <div class="delete p-1 float-right" (click)="deleteTask(item)">
                 <span><i class="fa fa-trash"></i></span>
+              </div>
+              <div class="edit p-1 mr-2 float-right" (click)="editTask(item)" data-toggle="modal" data-target="#exampleModal" >
+                <span><i class="fa fa-pencil"></i></span>
               </div>
               <mat-card-title
                 ><p class="text-primary">Task Name:</p>
-                {{ item.name }}</mat-card-title
+                {{ item.title }}</mat-card-title
               ><hr>
               <mat-card-subtitle
                 ><p class="text-primary">Task Description:</p>
-                {{ item.desc }}</mat-card-subtitle
+                {{ item.description }}</mat-card-subtitle
               >
             </div><hr>
             <div class="text-muted display-5 font-weight-light">
               Created Date:
-              {{ item?.date | date:"medium"}}
+              {{ item.created_at | date:"medium"}}
             </div>
           </mat-card>
           <div class="alert alert-info m-3" *ngIf="done.length === 0">
@@ -160,7 +169,7 @@
           </div>
         </div>
       </div>
-  
+
       <div class="col-md m-2">
         <div
           class="list"
@@ -168,31 +177,34 @@
           #rejectedlist="cdkDropList"
           [cdkDropListData]="rejected"
           [cdkDropListConnectedTo]="[rejectedlist, doinglist, donelist, todolist]"
-          (cdkDropListDropped)="drop($event)"
+          (cdkDropListDropped)="drop($event, 'rejected')"
         >
-  
+
         <nav class="navbar navbar-light bg-light border-bottom">
           <div>Rejected</div>
           <div>{{ rejected.length }}</div>
-        </nav> 
-  
+        </nav>
+
           <mat-card cdkDrag *ngFor="let item of rejected">
             <div>
-              <div class="delete p-1 float-right" (click)="deleteTask(item.date, 'rejected')">
+              <div class="delete p-1 float-right" (click)="deleteTask(item)">
                 <span><i class="fa fa-trash"></i></span>
+              </div>
+              <div class="edit p-1 mr-2 float-right" (click)="editTask(item)" data-toggle="modal" data-target="#exampleModal" >
+                <span><i class="fa fa-pencil"></i></span>
               </div>
               <mat-card-title
                 ><p class="text-primary">Task Name:</p>
-                {{ item.name }}</mat-card-title
+                {{ item.title }}</mat-card-title
               ><hr>
               <mat-card-subtitle
                 ><p class="text-primary">Task Description:</p>
-                {{ item.desc }}</mat-card-subtitle
+                {{ item.description }}</mat-card-subtitle
               >
             </div><hr>
             <div class="text-muted display-5 font-weight-light">
               Created Date:
-              {{ item?.date | date:"medium"}}
+              {{ item.created_at | date:"medium"}}
             </div>
           </mat-card>
           <div class="alert alert-info m-3" *ngIf="rejected.length === 0">

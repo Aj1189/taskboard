@@ -1,0 +1,38 @@
+GET localhost:5000/api/tasks
+
+###
+
+POST localhost:5000/api/tasks
+Content-Type: application/json
+
+{
+  "title": "This is a test task",
+  "description": "More info about it"
+}
+
+###
+GET localhost:5000/tasks/1
+
+
+###
+
+PUT localhost:5000/tasks/1
+Content-Type: application/json
+
+{
+  "title": "This is a new title",
+  "description": "And a new description too!"
+}
+
+###
+PUT localhost:5000/api/tasks/2
+Content-Type: application/json
+
+{
+  "status": "doing",
+  "after": 0
+}
+
+
+###
+DELETE localhost:5000/tasks/1

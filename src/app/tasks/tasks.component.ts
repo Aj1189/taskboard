@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
 import {
   CdkDragDrop,
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { FormControl, FormGroup } from '@angular/forms';
+import {FormControl, FormGroup} from '@angular/forms';
+import {TaskService} from '../services/task.service';
+import {Task} from 'protractor/built/taskScheduler';
 
 @Component({
   selector: 'tasks',
@@ -14,55 +16,60 @@ import { FormControl, FormGroup } from '@angular/forms';
 })
 export class TasksComponent implements OnInit {
 
-  newTaskForm: FormGroup;
+  @ViewChild('closeModalButton') closeModalButton: ElementRef;
 
-  constructor(public dialog: MatDialog) {}
+  newTaskForm: FormGroup;
 
   todo = [];
   doing = [];
   done = [];
   rejected = [];
 
+  constructor(public dialog: MatDialog, private task: TaskService) {
+  }
+
+
   ngOnInit() {
+    this.reload();
+
 
     this.newTaskForm = new FormGroup({
-      'name' : new FormControl(null),
-      'desc' : new FormControl(null),
-      'date' : new FormControl()
-    })
-
-    let localtodo = localStorage.getItem('todo');
-    if (localtodo) {
-      this.todo = JSON.parse(localtodo);
-    }
-
-    let localdoing = localStorage.getItem('doing');
-    if (localdoing) {
-      this.doing = JSON.parse(localdoing);
-    }
-
-    let localdone = localStorage.getItem('done');
-    if (localdone) {
-      this.done = JSON.parse(localdone);
-    }
-
-    let localrejected = localStorage.getItem('rejected');
-    if (localrejected) {
-      this.rejected = JSON.parse(localrejected);
-    }
+      title: new FormControl(null),
+      description: new FormControl(null),
+      id: new FormControl(null)
+    });
   }
 
-  addTask() {  
-    this.newTaskForm.value.date = new Date()
-     
-    this.todo.push(this.newTaskForm.value);
-    
-    this.newTaskForm.reset()
-    localStorage.setItem('todo', JSON.stringify(this.todo));
-    this.newTaskForm.value.date = new Date();
+  reload() {
+    this.task.getAll().subscribe(res => {
+      if (res) {
+        console.log(res);
+        this.todo = res.filter(t => !t.status || t.status === 'todo');
+        this.doing = res.filter(t => t.status === 'doing');
+        this.done = res.filter(t => t.status === 'done');
+        this.rejected = res.filter(t => t.status === 'rejected');
+      }
+    });
   }
 
-  drop(event: CdkDragDrop<any>) {
+  addTask() {
+    const task = this.newTaskForm.value;
+    if (task.id) {
+      this.task.updateOne(task.id, task.title, task.description).subscribe(res => {
+        this.reload();
+        this.closeModalButton.nativeElement.click();
+      });
+    } else {
+      this.task.createOne(task.title, task.description).subscribe(res => {
+        this.reload();
+      });
+    }
+
+    this.newTaskForm.reset();
+  }
+
+  drop(event: CdkDragDrop<any>, droppedStatus: string) {
+
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -78,37 +85,21 @@ export class TasksComponent implements OnInit {
       );
     }
 
-    localStorage.setItem('todo', JSON.stringify(this.todo));
-    localStorage.setItem('doing', JSON.stringify(this.doing));
-    localStorage.setItem('done', JSON.stringify(this.done));
-    localStorage.setItem('rejected', JSON.stringify(this.rejected));
+    const movedTask = event.container.data[event.currentIndex];
+    this.task.move(movedTask.id, droppedStatus, event.currentIndex).subscribe(result => {
+      this.reload();
+    });
   }
 
 
-  deleteTask(date, type){
-    switch (type) {
-      case 'todo':          
-        this.todo = this.todo.filter((item) => item.date !== date)
-        localStorage.setItem('todo', JSON.stringify(this.todo));
-      break;
-      
-      case 'doing':
-        this.doing = this.doing.filter((item) => item.date !== date)
-        localStorage.setItem('doing', JSON.stringify(this.doing));    
-      break;
+  deleteTask(tasksToDelete) {
+    this.task.deleteOne(tasksToDelete.id).subscribe(res => {
+      this.reload();
+    });
+  }
 
-      case 'done':
-        this.done = this.done.filter((item) => item.date !== date)
-        localStorage.setItem('done', JSON.stringify(this.done));    
-      break;
+  editTask(task) {
+    this.newTaskForm.patchValue(task);
 
-      case 'rejected':
-        this.rejected = this.rejected.filter((item) => item.date !== date)
-        localStorage.setItem('rejected', JSON.stringify(this.rejected));    
-      break;
-    
-      default:
-        break;
-    }
   }
 }
