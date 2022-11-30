@@ -56,5 +56,32 @@ cd backend
 pip3 install -r requirements.txt
 
 # Run the server using
-python3 backend.py
+nohup python3 backend.py &
+```
 
+### Troubleshooting
+
+#### Restarting the application
+```bash
+# Find the application por
+$ netstat -plnt | grep 8080
+ubuntu@ip-172-31-39-248:~$ netstat -plnt | grep 8080
+tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      3277/python3
+
+# Kill the process if it's present
+$ kill -9 3277
+
+# Start the server again
+nohup python3 backend.py &
+```
+
+
+#### Database is corrupt or flush the database
+```bash
+# Remove the sqlite file
+rm -rf task-board-db.sqlite
+
+# Start the application again
+nohup python3 backend.py &
+```
+Note, this will delete all the existing tasks
