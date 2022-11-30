@@ -1,0 +1,44 @@
+### Get a list of all tasks
+GET localhost:8080/api/tasks
+
+### Create a new task
+POST localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Get milk",
+  "description": "Go to the groceries store and buy milk"
+}
+
+### Retrieve a single task
+GET localhost:8080/tasks/1
+
+
+### Update the title and description of a task
+PUT localhost:8080/tasks/1
+Content-Type: application/json
+
+{
+  "title": "Get milk",
+  "description": "Go to the nearest groceries store and buy milk"
+}
+
+### Move task around
+# Note that although endpoints and methods are same, but action is taked based on parameters
+# If title and description is present in the body then the task is updated
+# if after and status is present in the body then the task is moved
+# BUT NOT BOTH (although, it can be quite easily achieved)
+
+# after: move the task after the task, this should be an integer value denoting the task_id which should precede it
+# status: the new status of the task - done, doing, rejected or it can be the same status the task is of.
+PUT localhost:8080/tasks/1
+Content-Type: application/json
+
+{
+  "after": 4,
+  "status": "doing"
+}
+
+
+### Delete a single task by id
+DELETE localhost:8080/tasks/1
